@@ -67,6 +67,10 @@ void Parser::ConsumeAllInput()
 
 }
 
+
+
+
+
 void Parser::parse_input()
 {
     Token token;
@@ -74,16 +78,7 @@ void Parser::parse_input()
     parse_program();
     parse_inputs();
 
-    token = lexer.peek(1);
-
-    if (token.token_type == END_OF_FILE)
-    {
-        return;
-    }
-    else
-    {
-        syntax_error();
-    }
+    token = expect(END_OF_FILE);
 }
 
 void Parser::parse_program()
@@ -92,13 +87,17 @@ void Parser::parse_program()
 
     parse_poly_decl_sect();
 
-    token = expect(START);
+    //token = expect(START);
 
-    //token = lexer.peek(1);
-    //
-    //if (token.token_type == START) return;
-    //else
-    //    syntax_error();
+    token = lexer.peek(1);
+
+    if (token.token_type == START)
+    {
+        //token = expect(START);
+        parse_start();
+    }
+    else
+        syntax_error();
 }
 
 void Parser::parse_poly_decl_sect()
@@ -110,8 +109,8 @@ void Parser::parse_poly_decl_sect()
     token = lexer.peek(1);
 
     if (token.token_type == POLY) { parse_poly_decl_sect(); }
-    else
-        return; // syntax_error();
+    //else
+    //    return; // syntax_error();
 }
 
 void Parser::parse_poly_decl()
@@ -123,12 +122,6 @@ void Parser::parse_poly_decl()
     token = expect(EQUAL);
     parse_poly_body();
     token = expect(SEMICOLON);
-
-    //token = lexer.peek(1);
-    //
-    //if (token.token_type == SEMICOLON) return;
-    //else
-    //    syntax_error();
 }
 
 void Parser::parse_poly_header()
@@ -144,10 +137,10 @@ void Parser::parse_poly_header()
         token = expect(LPAREN);
         parse_id_list();
         token = expect(RPAREN);
-        return;
+        //return;
     }
-    else
-        return;
+    //else
+    //    return;
 }
 
 void Parser::parse_id_list()
@@ -162,10 +155,10 @@ void Parser::parse_id_list()
     {
         token = expect(COMMA);
         parse_id_list();
-        return;
+        //return;
     }
-    else
-        return;
+    //else
+    //    return;
 }
 
 void Parser::parse_poly_name()
@@ -194,11 +187,9 @@ void Parser::parse_term_list()
     {
         parse_add_operator();
         parse_term_list();
-        return;
     }
-    else
-        return;
 }
+
 
 void Parser::parse_term() {
 
@@ -209,7 +200,6 @@ void Parser::parse_term() {
     if (token.token_type == ID)
     {
         parse_monomial_list();
-        return;
     }
     else if (token.token_type == NUM)
     {
@@ -221,13 +211,9 @@ void Parser::parse_term() {
         {
             parse_monomial_list();
         }
-        else
-            return;
-
     }
     else
         syntax_error();
-
 }
 
 /*
@@ -271,10 +257,7 @@ void Parser::parse_monomial_list()
     if (token.token_type == ID)
     {
         parse_monomial_list();
-        return;
     }
-    else
-        return;
 }
 
 void Parser::parse_monomial()
@@ -287,10 +270,7 @@ void Parser::parse_monomial()
     if (token.token_type == POWER)
     {
         parse_exponent();
-        return;
     }
-    else
-        return;
 }
 
 void Parser::parse_exponent()
@@ -299,14 +279,6 @@ void Parser::parse_exponent()
 
     token = expect(POWER);
     token = expect(NUM);
-
-    //token = lexer.peek(1);
-    //if (token.token_type == NUM)
-    //{
-    //    return;
-    //}
-    //else
-    //    syntax_error();
 }
 
 void Parser::parse_add_operator()
@@ -317,15 +289,11 @@ void Parser::parse_add_operator()
     if (token.token_type == PLUS)
     {
         token = expect(PLUS);
-        return;
     }
     else if (token.token_type == MINUS)
     {
         token = expect(MINUS);
-        return;
     }
-    else
-        return;
 }
 
 void Parser::parse_coefficient()
@@ -340,7 +308,14 @@ void Parser::parse_start()
     Token token;
 
     token = expect(START);
-    parse_statement_list();
+
+    token = lexer.peek(1);
+    if (token.token_type == ID || token.token_type == INPUT)
+    {
+        parse_statement_list();
+    }
+    else
+        syntax_error();
 }
 
 void Parser::parse_inputs()
@@ -353,10 +328,7 @@ void Parser::parse_inputs()
     if (token.token_type == NUM)
     {
         parse_inputs();
-        return;
     }
-    else
-        return;
 }
 
 void Parser::parse_statement_list()
@@ -369,10 +341,10 @@ void Parser::parse_statement_list()
     if (token.token_type == INPUT || token.token_type == ID)
     {
         parse_statement_list();
-        return;
+        //return;
     }
-    else
-        return;
+    //else
+    //    return;
 }
 
 void Parser::parse_statement()
@@ -383,15 +355,15 @@ void Parser::parse_statement()
     if (token.token_type == INPUT)
     {
         parse_input_statement();
-        return;
+        //return;
     }
     else if (token.token_type == ID)
     {
         parse_poly_eval_statement();
-        return;
+        //return;
     }
-    else
-        return; // syntax_error();
+    //else
+    //    return;
 }
 
 void Parser::parse_poly_eval_statement()
@@ -427,6 +399,7 @@ void Parser::parse_poly_eval()
     token = expect(RPAREN);
 }
 
+
 void Parser::parse_argument_list()
 {
     Token token;
@@ -438,11 +411,10 @@ void Parser::parse_argument_list()
     {
         token = expect(COMMA);
         parse_argument_list();
-        return;
     }
-    else
-        return;
 }
+
+/*
 
 void Parser::parse_argument()
 {
@@ -452,50 +424,46 @@ void Parser::parse_argument()
     if (token.token_type == LPAREN)
     {
         parse_poly_eval();
-        return;
+        //return;
     }
 
     token = lexer.peek(1);
     if (token.token_type == ID)
     {
         token = expect(ID);
-        return;
+        //return;
     }
     else if (token.token_type == NUM)
     {
         token = expect(NUM);
-        return;
+        //return;
     }
-    else
-        return;
 }
 
-//void Parser::parse_argument()
-//{
-//    Token token;
-//
-//    token = lexer.peek(1);
-//    if (token.token_type == ID)
-//    {
-//        token = expect(ID);
-//
-//        token = lexer.peek(1);
-//        if (token.token_type == LPAREN)
-//        {
-//            parse_poly_eval();
-//            return;
-//        }
-//
-//        return;
-//    }
-//    else if (token.token_type == NUM)
-//    {
-//        token = expect(NUM);
-//        return;
-//    }
-//    else
-//        return; // syntax_error();
-//}
+*/
+
+void Parser::parse_argument() {
+
+    Token token = lexer.peek(1);
+
+    if (token.token_type == NUM) {
+        token = expect(NUM);
+    }
+    else if (token.token_type == ID) {
+
+        token = lexer.peek(2);
+
+        if (token.token_type == LPAREN) {
+            parse_poly_eval();
+        }
+        else { token = expect(ID); }
+    }
+    else
+        syntax_error();
+}
+
+
+
 
 int main()
 {
@@ -508,9 +476,5 @@ int main()
     parser.parse_input();
 
 	parser.ConsumeAllInput();
-
-
-    //changes start here
-
 
 }
